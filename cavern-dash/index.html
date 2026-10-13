@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#070b1b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Cavern Dash: an original retro platform game inspired by 1980s single-screen cave adventures.">
   <title>Cavern Dash — 12 Cavern Arcade Adventure</title>
   <style>
@@ -77,10 +79,57 @@
     @media (pointer:coarse) { .mobileControlRow { display:flex; } }
     @media (max-width:540px) { .shell { padding:12px 8px 24px; } .header { margin-bottom:9px; } .topBar { padding:8px; gap:9px; } .stat { min-width:50px; } .statLabel { font-size:9px; } .statValue { font-size:12px; } .airWrap { min-width:65px; } .utility { padding:7px; } .footer { font-size:10px; padding:8px; } .menu { padding:14px; } .mobileControlRow { margin:12px 5px 0; } }
     @media (max-height:700px) and (min-width:700px) { .shell { padding-top:8px; } .header { margin-bottom:8px; } .controls { margin-top:10px; } }
+
+    /* Full-screen arcade includes the controls, unlike the old arcade-only view. */
+    .exitFullscreen { display:none; }
+    .shell:fullscreen, .shell.immersive {
+      position:fixed; inset:0; width:100%; max-width:none; height:100vh; height:100dvh;
+      padding:10px max(10px,env(safe-area-inset-right)) 10px max(10px,env(safe-area-inset-left));
+      margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:#050713; overflow:hidden; z-index:10000;
+    }
+    .shell:is(:fullscreen,.immersive) > :is(.header,.controls,.footnote) { display:none; }
+    .shell:is(:fullscreen,.immersive) .arcade {
+      flex:0 0 auto; width:min(100%,calc((100dvh - 100px) * 1.68));
+      max-width:100%; margin:0 auto;
+    }
+    .shell:is(:fullscreen,.immersive) .topBar { padding:5px 9px; gap:8px; border-bottom-width:2px; }
+    .shell:is(:fullscreen,.immersive) .stat { min-width:42px; gap:1px; }
+    .shell:is(:fullscreen,.immersive) .statLabel { font-size:9px; }
+    .shell:is(:fullscreen,.immersive) .statValue { font-size:clamp(10px,1.6vw,15px); }
+    .shell:is(:fullscreen,.immersive) .airWrap { min-width:58px; }
+    .shell:is(:fullscreen,.immersive) .airTrack { height:8px; margin-top:2px; }
+    .shell:is(:fullscreen,.immersive) .footer { padding:5px 9px; gap:5px; font-size:10px; border-top-width:1px; }
+    .shell:is(:fullscreen,.immersive) .mobileControlRow {
+      flex-shrink:0; width:min(100%,760px); margin:10px auto 0;
+    }
+    .shell:is(:fullscreen,.immersive) .touchBtn { width:65px; height:55px; }
+    .shell:is(:fullscreen,.immersive) .touchBtn.jump { width:95px; }
+    .shell:is(:fullscreen,.immersive) > .exitFullscreen {
+      display:block; position:absolute; top:max(5px,env(safe-area-inset-top));
+      right:max(6px,env(safe-area-inset-right)); z-index:10;
+      background:#1d2a44e8; color:white; border:1px solid #7e94c6;
+      border-radius:6px; padding:6px 9px; font-size:11px;
+    }
+    body.gameFullscreen { overflow:hidden; }
+    @media (orientation:landscape) and (pointer:coarse) {
+      .shell:is(:fullscreen,.immersive) .mobileControlRow {
+        position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+        width:100%; margin:0; padding:0 max(8px,env(safe-area-inset-right)) 0 max(8px,env(safe-area-inset-left));
+        pointer-events:none;
+      }
+      .shell:is(:fullscreen,.immersive) .mobileControlRow .touchBtn { pointer-events:auto; }
+    }
+    @media (max-height:460px) and (orientation:landscape) {
+      .shell:is(:fullscreen,.immersive) .arcade { width:min(100%,calc((100dvh - 79px) * 1.68)); }
+      .shell:is(:fullscreen,.immersive) .footer { font-size:9px; }
+      .shell:is(:fullscreen,.immersive) .statLabel { font-size:8px; }
+    }
   </style>
 </head>
 <body>
 <main class="shell">
+  <button class="exitFullscreen" id="exitFullscreenButton" type="button" aria-label="Exit full screen">✕ Exit</button>
   <header class="header">
     <div class="brand">
       <div class="brandIcon" aria-hidden="true">◆</div>
@@ -596,11 +645,42 @@
   }
   function handleStart(){if(game.mode==='paused')pauseToggle();else startGame(game.practice?game.levelIndex:null);}
   playButton.addEventListener('click',handleStart);
-  $('#fullscreenButton').addEventListener('click',async()=>{
-    const elem=$('.arcade');
-    try{if(document.fullscreenElement)await document.exitFullscreen();else await elem.requestFullscreen();}catch(_){e.status.textContent='Full screen unavailable in this browser';}
+  // Fullscreen the whole console so mobile touch controls remain available.
+  // iPhone browsers without element fullscreen get a full-viewport immersive layout.
+  const fullShell=$('.shell'), fullButton=$('#fullscreenButton'), exitButton=$('#exitFullscreenButton');
+  let immersiveFallback=false;
+  const inNativeFullscreen=()=>document.fullscreenElement===fullShell || document.webkitFullscreenElement===fullShell;
+  const inFullscreen=()=>inNativeFullscreen() || immersiveFallback;
+  function syncFullscreen(){
+    const active=inFullscreen();
+    document.body.classList.toggle('gameFullscreen',active);
+    fullButton.textContent=active?'⛶ Exit full screen':'⛶ Full screen';
+    fullButton.setAttribute('aria-pressed',String(active));
+    exitButton.setAttribute('aria-hidden',String(!active));
+  }
+  async function setFullscreen(enable){
+    if(enable){
+      if(fullShell.requestFullscreen){
+        try { await fullShell.requestFullscreen(); syncFullscreen(); canvas.focus({preventScroll:true}); return; }
+        catch (_) { /* iOS and embedded browsers may reject the Fullscreen API. */ }
+      }
+      immersiveFallback=true;
+      fullShell.classList.add('immersive');
+      e.status.textContent='Immersive view · browser bars may remain on this device';
+      syncFullscreen();
+      window.scrollTo(0,0);
+    } else {
+      if(document.fullscreenElement){try{await document.exitFullscreen();}catch(_){/* ignore */}}
+      immersiveFallback=false;
+      fullShell.classList.remove('immersive');
+      syncFullscreen();
+    }
     canvas.focus({preventScroll:true});
-  });
+  }
+  fullButton.addEventListener('click',()=>setFullscreen(!inFullscreen()));
+  exitButton.addEventListener('click',()=>setFullscreen(false));
+  document.addEventListener('fullscreenchange',syncFullscreen);
+  document.addEventListener('webkitfullscreenchange',syncFullscreen);
   $('#soundButton').addEventListener('click',()=>{muted=!muted;$('#soundButton').textContent=muted?'♫ Sound: off':'♫ Sound: on';if(!muted)sound(650,.1);});
   window.addEventListener('keydown',ev=>{
     if(['ArrowLeft','ArrowRight','ArrowUp','Space','KeyA','KeyD','KeyW','Escape'].includes(ev.code))ev.preventDefault();
