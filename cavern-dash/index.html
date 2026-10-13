@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070b1b">
+  <meta name="description" content="Cavern Dash: an original retro platform game inspired by 1980s single-screen cave adventures.">
+  <title>Cavern Dash — Retro Console Prototype</title>
+  <style>
+    :root { color-scheme:dark; --ink:#f0f4ff; --muted:#93a2ca; --purple:#bc80ff; --cyan:#59e4ff; --yellow:#ffdc70; --frame:#202844; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; min-height:100%; background:#080b18; color:var(--ink); font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+    body { background: radial-gradient(ellipse at 50% 0%, #192044 0%, #0a0d1f 48%, #050713 100%); }
+    button { font:inherit; cursor:pointer; }
+    button:focus-visible { outline:3px solid white; outline-offset:3px; }
+    .shell { max-width:1060px; margin:0 auto; padding:20px 18px 28px; }
+    .header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brandIcon { color:#090d1d; background:var(--yellow); font-weight:900; width:39px; height:39px; display:grid; place-items:center; box-shadow: 4px 4px 0 #ae703f; font-size:24px; }
+    .brandTitle { font-size:clamp(17px,2.8vw,25px); letter-spacing:.14em; font-weight:900; margin:0; line-height:1.1; }
+    .brandSubtitle { margin:4px 0 0; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; font-size:10px; }
+    .utilities { display:flex; gap:8px; flex-wrap:wrap; }
+    .utility { border:1px solid #3a476e; border-radius:8px; color:#cbd7f4; padding:9px 11px; background:#151c34; font-size:12px; }
+    .utility:hover { background:#273257; }
+    .arcade { position:relative; border:3px solid #34426b; box-shadow:0 0 0 5px #11182d,0 22px 70px #000a; border-radius:7px; overflow:hidden; background:#01030b; }
+    .topBar { background:linear-gradient(180deg,#1a2444,#11172c); border-bottom:3px solid #34426b; display:flex; justify-content:space-between; gap:10px; padding:13px 17px 12px; align-items:center; flex-wrap:wrap; }
+    .stat { display:flex; flex-direction:column; gap:4px; min-width:70px; }
+    .statLabel { color:#95a6d3; text-transform:uppercase; letter-spacing:.17em; font-size:10px; }
+    .statValue { font-size:clamp(13px,2vw,20px); color:white; font-weight:900; letter-spacing:.07em; font-variant-numeric:tabular-nums; }
+    #levelLabel { color:#f9da76; }
+    #gemsLabel { color:#79f3e8; }
+    .airWrap { flex:1; max-width:230px; min-width:100px; }
+    .airTrack { margin-top:4px; height:11px; background:#040817; border:1px solid #4d5a80; padding:2px; }
+    #airBar { width:100%; height:100%; background:linear-gradient(90deg,#38edc6,#d7ef75); transition:width .15s linear; }
+    .viewport { position:relative; overflow:hidden; }
+    canvas { display:block; width:100%; height:auto; aspect-ratio:840/500; background:#030614; image-rendering:pixelated; }
+    .viewport:after { content:""; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 0 35px 8px #000a; }
+    .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:18px; background:linear-gradient(180deg,#050817ad,#03040be0); z-index:2; }
+    .overlay.hidden { display:none; }
+    .menu { width:min(100%,520px); text-align:center; border:2px solid #4f618a; background:rgba(9,15,37,.96); box-shadow:8px 8px 0 #0009,0 0 45px #4c429e33; padding:clamp(15px,3.5vw,30px); }
+    .eyebrow { color:#64e9f3; font-size:11px; font-weight:900; letter-spacing:.25em; text-transform:uppercase; }
+    .menu h2 { margin:12px 0; font-size:clamp(28px,5.3vw,50px); line-height:1; color:#ffda73; text-shadow:4px 4px #5c356b; letter-spacing:.06em; }
+    .menu p { color:#c3cde7; line-height:1.6; font-size:clamp(11px,1.5vw,14px); }
+    .menu .description { max-width:420px; margin:15px auto 17px; }
+    .bigButton { color:#071425; background:#f9d875; border:0; padding:14px 24px; font-weight:900; letter-spacing:.12em; min-width:220px; box-shadow:5px 5px 0 #9b5c68; text-transform:uppercase; margin:8px 0 13px; }
+    .bigButton:hover { transform:translateY(-2px); background:#ffe99b; }
+    .menu .hint { margin-top:8px; font-size:11px; color:#8fa1c9; }
+    .key { display:inline-block; background:#263353; border:1px solid #53638e; border-bottom-width:3px; padding:2px 6px; color:white; margin:2px 1px; }
+    .footer { display:flex; align-items:center; justify-content:space-between; gap:10px; color:#a5b0ce; background:#11172c; border-top:2px solid #2b3657; padding:12px 16px; font-size:12px; flex-wrap:wrap; }
+    #status { display:flex; align-items:center; gap:8px; }
+    #status:before { content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:#59d5a3; box-shadow:0 0 9px #59d5a3; }
+    .controls { text-align:center; margin:23px auto 0; max-width:950px; color:#9baccc; font-size:12px; line-height:1.8; }
+    .controls strong { color:#eff4ff; }
+    .mobileControlRow { display:none; justify-content:space-between; margin-top:15px; gap:12px; touch-action:none; user-select:none; -webkit-user-select:none; }
+    .mobileCluster { display:flex; gap:13px; }
+    .touchBtn { width:72px; height:67px; background:#222e50; border:2px solid #54658d; border-radius:12px; color:#fff; font-weight:bold; font-size:25px; touch-action:none; user-select:none; -webkit-user-select:none; }
+    .touchBtn:active, .touchBtn.pressed { background:#5369aa; }
+    .touchBtn.jump { width:110px; background:#704c86; border-color:#ad81d2; font-size:14px; letter-spacing:.05em; }
+    .footnote { text-align:center; color:#6c799f; margin:18px 0 0; font-size:10px; line-height:1.5; }
+    @media (pointer:coarse) { .mobileControlRow { display:flex; } }
+    @media (max-width:540px) { .shell { padding:12px 8px 24px; } .header { margin-bottom:9px; } .topBar { padding:8px; gap:9px; } .stat { min-width:50px; } .statLabel { font-size:9px; } .statValue { font-size:12px; } .airWrap { min-width:65px; } .utility { padding:7px; } .footer { font-size:10px; padding:8px; } .menu { padding:14px; } .mobileControlRow { margin:12px 5px 0; } }
+    @media (max-height:700px) and (min-width:700px) { .shell { padding-top:8px; } .header { margin-bottom:8px; } .controls { margin-top:10px; } }
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header class="header">
+    <div class="brand">
+      <div class="brandIcon" aria-hidden="true">◆</div>
+      <div><h1 class="brandTitle">CAVERN DASH</h1><p class="brandSubtitle">A new 8-bit mining adventure · Demo build 0.1</p></div>
+    </div>
+    <div class="utilities">
+      <button class="utility" id="soundButton" type="button" aria-label="Toggle sound">♫ Sound: on</button>
+      <button class="utility" id="fullscreenButton" type="button">⛶ Full screen</button>
+    </div>
+  </header>
+  <section class="arcade" aria-label="Cavern Dash game">
+    <div class="topBar">
+      <div class="stat"><span class="statLabel">Cavern</span><span class="statValue" id="levelLabel">01 / 04</span></div>
+      <div class="stat"><span class="statLabel">Score</span><span class="statValue" id="scoreLabel">000000</span></div>
+      <div class="stat"><span class="statLabel">Crystals</span><span class="statValue" id="gemsLabel">0 / 4</span></div>
+      <div class="stat airWrap"><span class="statLabel">Air supply</span><div class="airTrack" aria-label="Air remaining"><div id="airBar"></div></div></div>
+      <div class="stat"><span class="statLabel">Lives</span><span class="statValue" id="livesLabel">♥ ♥ ♥</span></div>
+    </div>
+    <div class="viewport">
+      <canvas id="game" width="840" height="500" tabindex="0" aria-label="Side-scrolling keyboard or controller game"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="menu" role="dialog" aria-labelledby="overlayTitle" aria-describedby="overlayDescription">
+          <div class="eyebrow" id="overlayEyebrow">Insert imagination · Press start</div>
+          <h2 id="overlayTitle">CAVERN DASH</h2>
+          <p class="description" id="overlayDescription">Four dangerous caverns. Collect every glowing crystal, dodge the cave creatures, and reach the exit before your air runs out.</p>
+          <button class="bigButton" id="playButton" type="button">START ADVENTURE</button>
+          <p class="hint" id="overlayHint">Move <span class="key">←</span> <span class="key">→</span> · Jump <span class="key">SPACE</span><br>Gamepad: left stick / D-pad + A · Start to begin</p>
+        </div>
+      </div>
+    </div>
+    <footer class="footer">
+      <span id="cavernName">01 — THE COPPER PASSAGE</span>
+      <span id="status">Keyboard ready · Connect a gamepad any time</span>
+      <span>PAUSE: P / START</span>
+    </footer>
+  </section>
+  <div class="mobileControlRow" aria-label="Touch controls">
+    <div class="mobileCluster"><button type="button" class="touchBtn" id="leftTouch" aria-label="Move left">◀</button><button type="button" class="touchBtn" id="rightTouch" aria-label="Move right">▶</button></div>
+    <button type="button" class="touchBtn jump" id="jumpTouch">JUMP</button>
+  </div>
+  <p class="controls"><strong>Keyboard:</strong> ← / → or A / D to move · Space / W / ↑ to jump · P / Esc to pause · M to mute. &nbsp; <strong>Controller:</strong> D-pad / stick, A to jump, Start to pause. Your progress resets when you lose a life — old-school rules!</p>
+  <p class="footnote">Original game code, artwork, sound and level layouts. Inspired by 1980s single-screen platform adventures; not an official Manic Miner release. Works offline.</p>
+</main>
+<script>
+(() => {
+  'use strict';
+  const W=840,H=500,GRAVITY=920,SPEED=205,JUMP=-448,PL_H=16,MAX_FALL=170;
+  const canvas=document.querySelector('#game'), ctx=canvas.getContext('2d',{alpha:false});
+  const $=s=>document.querySelector(s);
+  const overlay=$('#overlay'),playButton=$('#playButton');
+  const e={level:$('#levelLabel'),score:$('#scoreLabel'),gems:$('#gemsLabel'),air:$('#airBar'),lives:$('#livesLabel'),name:$('#cavernName'),status:$('#status')};
+  const floor=(x,w)=>({x,y:450,w,h:50,kind:'ground'});
+  const plat=(x,y,w,kind='stone')=>({x,y,w,h:PL_H,kind});
+  const gem=(x,y)=>({x,y,active:true,phase:Math.random()*6.28});
+  const monster=(x,y,min,max,speed,type='robot',axis='x')=>({x,y,min,max,speed,type,axis,w:type==='bat'?28:25,h:type==='bat'?18:24,sign:1,startX:x,startY:y});
+  const levels=[
+    {name:'THE COPPER PASSAGE',color:'#50dce0',rock:'#263454',air:96,
+      platforms:[floor(0,840),plat(205,365,145),plat(420,278,160,'copper'),plat(615,365,135)],
+      gems:[gem(129,427),gem(270,342),gem(489,255),gem(683,343)],
+      enemies:[monster(543,426,510,585,64,'blob'),monster(620,426,615,735,69,'robot')],
+      spikes:[],exit:{x:787,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:105,y:408},{x:735,y:324}]},
+    {name:'THE GLOWWORM GROTTO',color:'#9c7aff',rock:'#29274a',air:104,
+      platforms:[floor(0,330),floor(420,420),plat(155,361,142,'violet'),plat(353,330,142,'violet'),plat(568,360,143)],
+      gems:[gem(102,427),gem(222,338),gem(420,307),gem(646,337)],
+      enemies:[monster(230,426,178,302,80,'robot'),monster(400,292,371,472,63,'bat'),monster(662,426,568,788,94,'blob')],
+      spikes:[{x:330,y:479,w:90,h:21}],exit:{x:785,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:130,y:410},{x:736,y:400}]},
+    {name:'THE CLOCKWORK CAVERN',color:'#ffab65',rock:'#383049',air:110,
+      platforms:[floor(0,840),plat(123,362,170,'copper'),plat(336,278,171),plat(550,365,175,'copper')],
+      gems:[gem(172,338),gem(420,254),gem(633,341),gem(772,428)],
+      enemies:[monster(200,426,120,330,90,'robot'),monster(375,252,349,478,93,'robot'),monster(602,335,556,695,84,'bat'),monster(725,426,688,787,112,'blob')],
+      spikes:[{x:313,y:434,w:45,h:16}],exit:{x:791,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:80,y:410},{x:520,y:240}]},
+    {name:'THE CRYSTAL HEART',color:'#77eea3',rock:'#19374a',air:118,
+      platforms:[floor(0,263),floor(375,192),floor(674,166),plat(211,357,130,'violet'),plat(399,273,157,'stone'),plat(584,359,148,'violet')],
+      gems:[gem(92,427),gem(268,334),gem(475,249),gem(643,336),gem(762,426)],
+      enemies:[monster(176,426,102,242,92,'blob'),monster(442,247,410,526,97,'robot'),monster(598,331,591,712,103,'bat'),monster(732,426,689,796,116,'robot')],
+      spikes:[{x:263,y:479,w:112,h:21},{x:567,y:479,w:107,h:21}],exit:{x:789,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:180,y:317},{x:565,y:234}]}
+  ];
+  const game={mode:'title',levelIndex:0,score:0,lives:3,highScore:0,air:100,player:null,items:[],enemies:[],particles:[],time:0,levelScoreStart:0,deathFlag:false};
+  try {game.highScore=Number(localStorage.getItem('cavernDashHighScore'))||0;} catch (_) {}
+  let muted=false,audio=null,previousPadJump=false,previousPadStart=false,lastTime=0,accum=0;
+  const keys=new Set(),touch={left:false,right:false,jump:false},control={jumpQueued:false};
+  const random=(min,max)=>min+Math.random()*(max-min);
+  const overlap=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
+  function sound(freq=440,len=.1,wave='square',vol=.025,slide=0){
+    if(muted) return;
+    try {
+      audio ||= new (window.AudioContext||window.webkitAudioContext)();
+      if(audio.state==='suspended') audio.resume();
+      const osc=audio.createOscillator(),amp=audio.createGain(),start=audio.currentTime;
+      osc.type=wave;osc.frequency.setValueAtTime(freq,start);
+      if(slide) osc.frequency.exponentialRampToValueAtTime(Math.max(30,freq+slide),start+len);
+      amp.gain.setValueAtTime(vol,start);amp.gain.exponentialRampToValueAtTime(.0001,start+len);
+      osc.connect(amp);amp.connect(audio.destination);osc.start(start);osc.stop(start+len+.005);
+    } catch (_) {}
+  }
+  function updateHud(){
+    e.level.textContent=String(game.levelIndex+1).padStart(2,'0')+' / '+String(levels.length).padStart(2,'0');
+    e.score.textContent=String(game.score).padStart(6,'0');
+    const total=levels[game.levelIndex].gems.length,remaining=game.items.filter(g=>g.active).length;
+    e.gems.textContent=(total-remaining)+' / '+total;
+    e.air.style.width=(Math.max(0,game.air)/levels[game.levelIndex].air*100).toFixed(1)+'%';
+    e.air.style.background=game.air<23?'#fd647c':game.air<45?'#ffd466':'linear-gradient(90deg,#38edc6,#d7ef75)';
+    e.lives.textContent=Array.from({length:Math.max(0,game.lives)},()=> '♥').join(' ');
+    e.name.textContent=String(game.levelIndex+1).padStart(2,'0')+' — '+levels[game.levelIndex].name;
+  }
+  function overlayShow(title,desc,button,eyebrow,hint='Move with arrows · Jump with Space · Gamepad A / Start'){
+    $('#overlayTitle').textContent=title;$('#overlayDescription').textContent=desc;$('#overlayEyebrow').textContent=eyebrow;
+    playButton.textContent=button;$('#overlayHint').textContent=hint;overlay.classList.remove('hidden');
+  }
+  function overlayHide(){overlay.classList.add('hidden');canvas.focus({preventScroll:true});}
+  function resetLevel(clearLives=false){
+    const level=levels[game.levelIndex];
+    game.air=level.air;
+    game.items=level.gems.map(g=>({...g,active:true}));
+    game.enemies=level.enemies.map(m=>({...m}));
+    game.particles=[];
+    game.player={x:level.start.x,y:level.start.y,w:19,h:28,vx:0,vy:0,grounded:false,coyote:0,invulnerable:clearLives?1.1:0.6,fallOrigin:level.start.y,landed:false,face:1};
+    updateHud();
+  }
+  function startGame(){
+    game.score=0;game.lives=3;game.levelIndex=0;game.time=0;game.levelScoreStart=0;
+    resetLevel(true);game.mode='playing';overlayHide();sound(480,.07,'square',.04,320);setTimeout(()=>sound(680,.12,'square',.026,170),100);
+  }
+  function pauseToggle(){
+    if(game.mode==='playing'){game.mode='paused';overlayShow('PAUSED','Take a breather. Your air supply is safe while paused.','RESUME GAME','CAVERN DASH · PAUSE','P / Escape / Start resumes · Q quits to title');}
+    else if(game.mode==='paused'){game.mode='playing';overlayHide();}
+  }
+  function saveHighScore(){
+    if(game.score>game.highScore){ game.highScore=game.score;try{localStorage.setItem('cavernDashHighScore',String(game.highScore));}catch(_){} }
+  }
+  function gameOver(){game.mode='gameover';saveHighScore();sound(320,.42,'sawtooth',.03,-250);overlayShow('GAME OVER','Your expedition ended in the deep. Score: '+game.score.toLocaleString()+' · Best: '+game.highScore.toLocaleString()+' points.','TRY AGAIN','NO MORE LIVES','Press Enter or gamepad Start to try again');}
+  function win(){game.score+=Math.ceil(game.air)*20;saveHighScore();game.mode='won';updateHud();sound(500,.4,'square',.03,800);overlayShow('YOU ESCAPED!','All four original caverns cleared! Final score: '+game.score.toLocaleString()+'. Best: '+game.highScore.toLocaleString()+'.','PLAY AGAIN','CAVERN DASH · COMPLETE','Press Enter or gamepad Start to play again');}
+  function loseLife(){
+    if(game.mode!=='playing')return;
+    sound(310,.4,'sawtooth',.035,-260);
+    burst(game.player.x+10,game.player.y+13,'#ff6d9c',25);
+    game.lives--;
+    game.score=game.levelScoreStart;
+    if(game.lives<=0){gameOver();return;}
+    resetLevel(true);
+  }
+  function advanceLevel(){
+    sound(550,.25,'square',.035,400);
+    if(game.levelIndex===levels.length-1){win();return;}
+    game.score+=Math.ceil(game.air)*20;
+    game.levelIndex++;
+    game.levelScoreStart=game.score;
+    resetLevel(true);
+  }
+  function burst(x,y,color,n=12){for(let i=0;i<n;i++)game.particles.push({x,y,vx:random(-155,155),vy:random(-245,15),life:random(.25,.7),duration:.7,color,size:Math.ceil(random(2,5))});}
+  function gamepadPoll(){
+    const pads=navigator.getGamepads?navigator.getGamepads():[];
+    const pad=Array.from(pads||[]).find(p=>p&&p.connected);
+    let left=false,right=false,jump=false,start=false;
+    if(pad){
+      left=!!(pad.buttons[14]?.pressed||(pad.axes[0]||0)<-.28);
+      right=!!(pad.buttons[15]?.pressed||(pad.axes[0]||0)>.28);
+      jump=!!(pad.buttons[0]?.pressed||pad.buttons[1]?.pressed);
+      start=!!(pad.buttons[9]?.pressed);
+      e.status.textContent=pad.id.slice(0,30)+' connected';
+    }
+    if(jump&&!previousPadJump){ if(game.mode==='playing')control.jumpQueued=true;else if(game.mode==='title'||game.mode==='gameover'||game.mode==='won')startGame(); }
+    if(start&&!previousPadStart){if(game.mode==='title'||game.mode==='gameover'||game.mode==='won')startGame();else pauseToggle();}
+    previousPadJump=jump;previousPadStart=start;
+    return {left,right};
+  }
+  function step(dt){
+    game.time+=dt;
+    const pad=gamepadPoll();
+    if(game.mode!=='playing')return;
+    const level=levels[game.levelIndex],p=game.player;
+    game.air-=dt;
+    if(game.air<=0){loseLife();return;}
+    p.invulnerable=Math.max(0,p.invulnerable-dt);
+    const left=keys.has('ArrowLeft')||keys.has('KeyA')||touch.left||pad.left;
+    const right=keys.has('ArrowRight')||keys.has('KeyD')||touch.right||pad.right;
+    p.vx=(Number(right)-Number(left))*SPEED;
+    if(p.vx)p.face=Math.sign(p.vx);
+    if(p.grounded)p.coyote=.085;
+    else p.coyote=Math.max(0,p.coyote-dt);
+    if(control.jumpQueued && p.coyote>0){p.vy=JUMP;p.grounded=false;p.coyote=0; p.fallOrigin=p.y; sound(260,.11,'square',.016,220);}
+    control.jumpQueued=false;
+    p.x=Math.max(0,Math.min(W-p.w,p.x+p.vx*dt));
+    const previousBottom=p.y+p.h;
+    p.vy=Math.min(840,p.vy+GRAVITY*dt);
+    p.y+=p.vy*dt;
+    let landed=false;
+    if(p.vy>=0){
+      let bestY=Infinity;
+      for(const platform of level.platforms){
+        if(p.x+p.w>platform.x+3 && p.x<platform.x+platform.w-3 && previousBottom<=platform.y+9 && p.y+p.h>=platform.y && platform.y<bestY)bestY=platform.y;
+      }
+      if(bestY!==Infinity){
+        if(!p.grounded && p.vy>0 && bestY-(p.fallOrigin+p.h)>MAX_FALL){loseLife();return;}
+        p.y=bestY-p.h;p.vy=0;landed=true;
+      }
+    }
+    if(!landed && p.grounded)p.fallOrigin=p.y;
+    p.grounded=landed;
+    if(p.y>H+40){loseLife();return;}
+    for(const m of game.enemies){
+      m[m.axis]+=m.speed*m.sign*dt;
+      if(m[m.axis]>=m.max){m[m.axis]=m.max;m.sign=-1;}
+      if(m[m.axis]<=m.min){m[m.axis]=m.min;m.sign=1;}
+      if(p.invulnerable<=0&&overlap(p,m)){loseLife();return;}
+    }
+    for(const s of level.spikes){if(overlap(p,s)){loseLife();return;}}
+    for(const crystal of game.items){
+      if(crystal.active&&overlap(p,{x:crystal.x-10,y:crystal.y-12,w:20,h:24})){
+        crystal.active=false;game.score+=250;sound(660,.12,'triangle',.04,460);burst(crystal.x,crystal.y,level.color,13);
+      }
+    }
+    const exitReady=game.items.every(g=>!g.active);
+    if(exitReady&&overlap(p,level.exit))advanceLevel();
+    for(const part of game.particles){part.x+=part.vx*dt;part.y+=part.vy*dt;part.vy+=420*dt;part.life-=dt;}
+    game.particles=game.particles.filter(part=>part.life>0);
+    updateHud();
+  }
+  function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+  function drawDiamond(cx,cy,r,col){
+    ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(Math.round(cx),Math.round(cy-r));ctx.lineTo(Math.round(cx+r),Math.round(cy));ctx.lineTo(Math.round(cx),Math.round(cy+r));ctx.lineTo(Math.round(cx-r),Math.round(cy));ctx.closePath();ctx.fill();
+    rect(cx-2,cy-r+4,3,5,'#fffff0');
+  }
+  function background(level){
+    ctx.fillStyle='#040817';ctx.fillRect(0,0,W,H);
+    for(let i=0;i<60;i++){
+      const x=(i*151+29)%W,y=(i*109+19)%H;
+      const alpha=.08+Math.sin(game.time*1.4+i)*.04;
+      rect(x,y,(i%4===0)?3:2,2,`rgba(149,184,240,${alpha})`);
+    }
+    // Jagged silhouettes are procedural and unique to this game.
+    ctx.fillStyle='#0d152b';ctx.beginPath();ctx.moveTo(0,0);
+    for(let x=0;x<=W+25;x+=25){const y=35+Math.sin(x*.023)*14+Math.sin(x*.07)*8;ctx.lineTo(x,y);}ctx.lineTo(W,0);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#0b1125';ctx.beginPath();ctx.moveTo(0,H);
+    for(let x=0;x<=W+25;x+=25){let y=385+Math.sin(x*.035)*22+Math.cos(x*.09)*7;ctx.lineTo(x,y);}ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+    rect(0,0,8,H,level.rock);rect(W-8,0,8,H,level.rock);
+    for(let x=0;x<W;x+=40){const h=15+(x*7%36);rect(x,0,14,h,'#151e39');rect(x+5,0,4,h-5,'#1e2943');}
+    for(let i=0;i<18;i++){
+      let x=(i*127+76)%W,y=(i*83+92)%(H-65);
+      rect(x,y,13,3,level.rock);rect(x+4,y+3,9,3,'#0d1630');
+    }
+    for(const t of level.torches){
+      rect(t.x-3,t.y+1,7,12,'#4f4856');
+      const flicker=Math.sin(game.time*12+t.x)*3;
+      rect(t.x-2,t.y-11-flicker,5,12+flicker,'#ffb654');rect(t.x,t.y-7-flicker,3,7+flicker,'#ffec92');
+    }
+  }
+  function drawPlatforms(level){
+    for(const p of level.platforms){
+      const top=p.kind==='violet'?'#9c75df':p.kind==='copper'?'#f9ab6e':level.color;
+      const body=p.kind==='ground'?'#2d3150':'#26344e';
+      rect(p.x,p.y,p.w,p.h,body);rect(p.x,p.y,p.w,5,top);rect(p.x,p.y+5,p.w,2,'#131e35');
+      for(let x=p.x+5;x<p.x+p.w-7;x+=18){rect(x,p.y+9,11,3,'#415373');rect(x+11,p.y+8,2,2,'#14213b');}
+      if(p.kind==='ground'){
+        rect(p.x,p.y+19,p.w,1,'#3c4265');
+        for(let x=p.x+10;x<p.x+p.w-10;x+=33){rect(x,p.y+24,15,4,'#414060');rect(x+9,p.y+35,16,3,'#222640');}
+      }
+    }
+  }
+  function drawSpikes(level){
+    for(const s of level.spikes){
+      rect(s.x,s.y+s.h-6,s.w,6,'#ff587d');
+      ctx.fillStyle='#ff8d70';
+      for(let x=s.x;x<s.x+s.w;x+=13){ctx.beginPath();ctx.moveTo(x,s.y+s.h-5);ctx.lineTo(x+7,s.y);ctx.lineTo(Math.min(x+14,s.x+s.w),s.y+s.h-5);ctx.fill();}
+    }
+  }
+  function drawExit(level){
+    const z=level.exit,ready=game.items.every(g=>!g.active),pulse=1+Math.sin(game.time*7)*.18;
+    rect(z.x-5,z.y-4,z.w+10,z.h+4,'#22324d');
+    rect(z.x,z.y,z.w,z.h,ready?'#3ae0a7':'#34415f');
+    rect(z.x+5,z.y+4,z.w-10,z.h-8,ready?'#113b4d':'#0d162b');
+    if(ready){rect(z.x+11,z.y+4,9,z.h-8,'#69ffc0');rect(z.x+8,z.y+10,z.w-16,3,'#d7ffe1');
+      rect(z.x-8,z.y-12,5*pulse,5*pulse,'#fff1a1');}
+    else {rect(z.x+9,z.y+19,14,12,'#69718b');rect(z.x+13,z.y+12,5,10,'#69718b');}
+    ctx.textAlign='center';ctx.font='bold 10px monospace';ctx.fillStyle=ready?'#b2ffc6':'#8d95ad';ctx.fillText(ready?'EXIT':'LOCKED',z.x+z.w/2,z.y-14);
+  }
+  function drawEnemies(){
+    for(const m of game.enemies){
+      const x=Math.round(m.x),y=Math.round(m.y),step=Math.floor(game.time*7)%2;
+      if(m.type==='robot'){
+        rect(x+4,y+1,17,17,'#ff8c8c');rect(x+2,y+4,21,11,'#dd5c7c');
+        rect(x+7,y+7,4,4,'#12172b');rect(x+16,y+7,4,4,'#12172b');
+        rect(x+6,y+20,5,4+step*1,'#fb8c65');rect(x+16,y+20,5,4+(1-step),'#fb8c65');
+        rect(x+2,y,5,4,'#ffe397');rect(x+19,y,5,4,'#ffe397');
+      } else if(m.type==='blob'){
+        rect(x+4,y+7,17,14,'#7bd876');rect(x+8,y+3,10,5,'#9fe989');
+        rect(x+2,y+12,4,10,'#58aa78');rect(x+19,y+12,4,10,'#58aa78');
+        rect(x+7,y+10,4,5,'#0c2226');rect(x+15,y+10,4,5,'#0c2226');
+        rect(x+7+step*2,y+22,5,2,'#58aa78');
+      }else{
+        const wing=Math.sin(game.time*13+m.x)*6;
+        rect(x+10,y+5,8,11,'#e080ec');rect(x+13,y+9,3,3,'#fff5cc');
+        rect(x+1,y+4-wing/2,12,6+wing/2,'#a75ae7');rect(x+16,y+4-wing/2,12,6+wing/2,'#a75ae7');
+        rect(x+13,y+1,3,5,'#f1b2fb');
+      }
+    }
+  }
+  function drawPlayer(p){
+    if(!p)return;
+    if(p.invulnerable>0&&Math.floor(game.time*13)%2===0)return;
+    const x=Math.round(p.x),y=Math.round(p.y),walking=p.grounded&&p.vx!==0,walk=Math.floor(game.time*10)%2;
+    // Tiny original 8-bit explorer in a yellow miner helmet with lamp.
+    rect(x+3,y+1,14,5,'#ffde66');rect(x+1,y+5,18,4,'#f9b841');rect(x+(p.face>0?16:0),y+3,4,4,'#fff5ae');
+    rect(x+6,y+9,11,9,'#f2aa7b');rect(x+12,y+11,3,3,'#0e1a29');
+    rect(x+6,y+17,12,7,'#59dbea');rect(x+8,y+19,6,4,'#3184af');
+    rect(x+1,y+17,5,6,'#f3aa79');rect(x+16,y+17,3,6,'#f3aa79');
+    if(walking){rect(x+5,y+24,5,4+(walk?0:2),'#dbebf4');rect(x+13,y+24,5,4+(walk?2:0),'#dbebf4');}
+    else{rect(x+5,y+24,5,4,'#dbebf4');rect(x+13,y+24,5,4,'#dbebf4');}
+  }
+  function drawItems(){
+    for(const c of game.items){if(!c.active)continue;
+      const shimmer=2*Math.sin(game.time*4+c.phase);
+      drawDiamond(c.x,c.y+shimmer,8,levels[game.levelIndex].color);
+      rect(c.x-2,c.y-15+shimmer,3,3,'#fff1c0');
+      if(Math.sin(game.time*5+c.phase)>.3)rect(c.x+10,c.y-9+shimmer,3,3,'#fcf9db');
+    }
+  }
+  function drawParticles(){for(const p of game.particles){ctx.globalAlpha=Math.max(0,p.life/p.duration);rect(p.x,p.y,p.size,p.size,p.color);}ctx.globalAlpha=1;}
+  function draw(){
+    const level=levels[game.levelIndex];
+    ctx.imageSmoothingEnabled=false;
+    background(level);drawPlatforms(level);drawSpikes(level);drawExit(level);drawItems();drawEnemies();drawPlayer(game.player);drawParticles();
+    // Subtle scanlines: makes the pixel art feel like an original arcade screen.
+    ctx.fillStyle='rgba(0,0,0,.055)';for(let y=0;y<H;y+=4)ctx.fillRect(0,y,W,1);
+    if(game.mode==='playing'&&game.air<23&&Math.floor(game.time*3)%2===0){
+      rect(14,18,140,25,'#6b1b35');ctx.fillStyle='#ffcad8';ctx.font='bold 15px monospace';ctx.textAlign='left';ctx.fillText('LOW AIR!',25,35);
+    }
+  }
+  function animate(t){
+    const dt=Math.min(.045,(t-lastTime)/1000||0);lastTime=t;accum+=dt;
+    const fixed=1/60;
+    let loops=0;
+    while(accum>=fixed&&loops++<4){step(fixed);accum-=fixed;}
+    if(loops>=4)accum=0;
+    draw();requestAnimationFrame(animate);
+  }
+  function handleStart(){if(game.mode==='paused')pauseToggle();else startGame();}
+  playButton.addEventListener('click',handleStart);
+  $('#fullscreenButton').addEventListener('click',async()=>{
+    const elem=$('.arcade');
+    try{if(document.fullscreenElement)await document.exitFullscreen();else await elem.requestFullscreen();}catch(_){e.status.textContent='Full screen unavailable in this browser';}
+    canvas.focus({preventScroll:true});
+  });
+  $('#soundButton').addEventListener('click',()=>{muted=!muted;$('#soundButton').textContent=muted?'♫ Sound: off':'♫ Sound: on';if(!muted)sound(650,.1);});
+  window.addEventListener('keydown',ev=>{
+    if(['ArrowLeft','ArrowRight','ArrowUp','Space','KeyA','KeyD','KeyW','Escape'].includes(ev.code))ev.preventDefault();
+    if(!keys.has(ev.code)){
+      if(['Space','ArrowUp','KeyW'].includes(ev.code)&&game.mode==='playing')control.jumpQueued=true;
+      if(ev.code==='KeyP'||ev.code==='Escape'){pauseToggle();}
+      if(ev.code==='Enter'&&['title','gameover','won'].includes(game.mode))startGame();
+      if(ev.code==='KeyQ'&&game.mode==='paused'){game.mode='title';overlayShow('CAVERN DASH','Four dangerous caverns. Collect every crystal and reach the exit before your air runs out.','START ADVENTURE','INSERT IMAGINATION · PRESS START','Move: ← → / A D · Jump: Space · Gamepad A / Start');}
+      if(ev.code==='KeyM'){$('#soundButton').click();}
+    }
+    keys.add(ev.code);
+  });
+  window.addEventListener('keyup',ev=>keys.delete(ev.code));
+  window.addEventListener('blur',()=>{keys.clear();touch.left=touch.right=touch.jump=false;if(game.mode==='playing')pauseToggle();});
+  window.addEventListener('gamepadconnected',ev=>{e.status.textContent='Controller connected: '+ev.gamepad.id.slice(0,23);});
+  window.addEventListener('gamepaddisconnected',()=>{e.status.textContent='Gamepad disconnected · Keyboard ready';});
+  function bindTouch(id,key){
+    const btn=$('#'+id);
+    btn.addEventListener('pointerdown',ev=>{ev.preventDefault();btn.setPointerCapture(ev.pointerId);touch[key]=true;btn.classList.add('pressed');if(key==='jump'&&game.mode==='playing')control.jumpQueued=true;});
+    const off=ev=>{ev.preventDefault();touch[key]=false;btn.classList.remove('pressed');};
+    btn.addEventListener('pointerup',off);btn.addEventListener('pointercancel',off);btn.addEventListener('lostpointercapture',()=>{touch[key]=false;btn.classList.remove('pressed');});
+  }
+  bindTouch('leftTouch','left');bindTouch('rightTouch','right');bindTouch('jumpTouch','jump');
+  resetLevel();updateHud();requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
