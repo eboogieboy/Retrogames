@@ -60,6 +60,17 @@
     @media (pointer:coarse) { .mobileControlRow { display:flex; } }
     @media (max-width:540px) { .shell { padding:12px 8px 24px; } .header { margin-bottom:9px; } .topBar { padding:8px; gap:9px; } .stat { min-width:50px; } .statLabel { font-size:9px; } .statValue { font-size:12px; } .airWrap { min-width:65px; } .utility { padding:7px; } .footer { font-size:10px; padding:8px; } .menu { padding:14px; } .mobileControlRow { margin:12px 5px 0; } }
     @media (max-height:700px) and (min-width:700px) { .shell { padding-top:8px; } .header { margin-bottom:8px; } .controls { margin-top:10px; } }
+
+    /* Give narrow-phone title and pause menus sufficient vertical space. */
+    @media (max-width:600px) {
+      .viewport:has(.overlay:not(.hidden)) { min-height:355px; }
+      .overlay { padding:10px; }
+      .menu { width:min(100%,430px); padding:12px; }
+      .menu h2 { font-size:clamp(24px,7vw,38px); margin:7px 0; }
+      .menu .description { margin:8px auto; line-height:1.35; }
+      .menu .hint { display:none; }
+      .bigButton { min-width:0; width:100%; padding:13px 12px; margin:6px 0; }
+    }
   </style>
 </head>
 <body>
