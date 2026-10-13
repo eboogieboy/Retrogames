@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#070b1b">
   <meta name="description" content="Cavern Dash: an original retro platform game inspired by 1980s single-screen cave adventures.">
-  <title>Cavern Dash — Retro Console Prototype</title>
+  <title>Cavern Dash — 12 Cavern Arcade Adventure</title>
   <style>
     :root { color-scheme:dark; --ink:#f0f4ff; --muted:#93a2ca; --purple:#bc80ff; --cyan:#59e4ff; --yellow:#ffdc70; --frame:#202844; }
     * { box-sizing:border-box; }
@@ -57,11 +57,14 @@
     .touchBtn:active, .touchBtn.pressed { background:#5369aa; }
     .touchBtn.jump { width:110px; background:#704c86; border-color:#ad81d2; font-size:14px; letter-spacing:.05em; }
     .footnote { text-align:center; color:#6c799f; margin:18px 0 0; font-size:10px; line-height:1.5; }
-    @media (pointer:coarse) { .mobileControlRow { display:flex; } }
-    @media (max-width:540px) { .shell { padding:12px 8px 24px; } .header { margin-bottom:9px; } .topBar { padding:8px; gap:9px; } .stat { min-width:50px; } .statLabel { font-size:9px; } .statValue { font-size:12px; } .airWrap { min-width:65px; } .utility { padding:7px; } .footer { font-size:10px; padding:8px; } .menu { padding:14px; } .mobileControlRow { margin:12px 5px 0; } }
-    @media (max-height:700px) and (min-width:700px) { .shell { padding-top:8px; } .header { margin-bottom:8px; } .controls { margin-top:10px; } }
-
-    /* Give narrow-phone title and pause menus sufficient vertical space. */
+    .practice { border-top:1px solid #3e4e76; padding-top:10px; margin-top:4px; color:#b6c9ed; font-size:12px; }
+    .practice summary { cursor:pointer; color:#a7eafa; font-weight:bold; padding:8px; }
+    .practiceInner { display:grid; grid-template-columns:1fr; gap:6px; text-align:left; margin:5px auto; max-width:370px; }
+    .practiceInner select { width:100%; background:#1a2850; color:white; border:1px solid #849bc9; border-radius:5px; font:inherit; padding:10px; }
+    .practiceInner button { background:#315478; color:#f1f9ff; border:1px solid #79bed8; font:inherit; font-weight:bold; padding:10px; border-radius:5px; }
+    .practiceInner button:hover { background:#457c94; }
+    .overlay { overflow-y:auto; }
+    .menu { max-height:100%; overflow-y:auto; overscroll-behavior:contain; }
     @media (max-width:600px) {
       .viewport:has(.overlay:not(.hidden)) { min-height:355px; }
       .overlay { padding:10px; }
@@ -71,6 +74,9 @@
       .menu .hint { display:none; }
       .bigButton { min-width:0; width:100%; padding:13px 12px; margin:6px 0; }
     }
+    @media (pointer:coarse) { .mobileControlRow { display:flex; } }
+    @media (max-width:540px) { .shell { padding:12px 8px 24px; } .header { margin-bottom:9px; } .topBar { padding:8px; gap:9px; } .stat { min-width:50px; } .statLabel { font-size:9px; } .statValue { font-size:12px; } .airWrap { min-width:65px; } .utility { padding:7px; } .footer { font-size:10px; padding:8px; } .menu { padding:14px; } .mobileControlRow { margin:12px 5px 0; } }
+    @media (max-height:700px) and (min-width:700px) { .shell { padding-top:8px; } .header { margin-bottom:8px; } .controls { margin-top:10px; } }
   </style>
 </head>
 <body>
@@ -78,7 +84,7 @@
   <header class="header">
     <div class="brand">
       <div class="brandIcon" aria-hidden="true">◆</div>
-      <div><h1 class="brandTitle">CAVERN DASH</h1><p class="brandSubtitle">A new 8-bit mining adventure · Demo build 0.1</p></div>
+      <div><h1 class="brandTitle">CAVERN DASH</h1><p class="brandSubtitle">A new 8-bit mining adventure · Expanded edition · 12 caverns</p></div>
     </div>
     <div class="utilities">
       <button class="utility" id="soundButton" type="button" aria-label="Toggle sound">♫ Sound: on</button>
@@ -87,20 +93,24 @@
   </header>
   <section class="arcade" aria-label="Cavern Dash game">
     <div class="topBar">
-      <div class="stat"><span class="statLabel">Cavern</span><span class="statValue" id="levelLabel">01 / 04</span></div>
+      <div class="stat"><span class="statLabel">Cavern</span><span class="statValue" id="levelLabel">01 / 12</span></div>
       <div class="stat"><span class="statLabel">Score</span><span class="statValue" id="scoreLabel">000000</span></div>
       <div class="stat"><span class="statLabel">Crystals</span><span class="statValue" id="gemsLabel">0 / 4</span></div>
       <div class="stat airWrap"><span class="statLabel">Air supply</span><div class="airTrack" aria-label="Air remaining"><div id="airBar"></div></div></div>
       <div class="stat"><span class="statLabel">Lives</span><span class="statValue" id="livesLabel">♥ ♥ ♥</span></div>
     </div>
     <div class="viewport">
-      <canvas id="game" width="840" height="500" tabindex="0" aria-label="Side-scrolling keyboard or controller game"></canvas>
+      <canvas id="game" width="840" height="500" tabindex="0" aria-label="Single-screen platform game supporting touch, keyboard and controller"></canvas>
       <div class="overlay" id="overlay">
         <div class="menu" role="dialog" aria-labelledby="overlayTitle" aria-describedby="overlayDescription">
           <div class="eyebrow" id="overlayEyebrow">Insert imagination · Press start</div>
           <h2 id="overlayTitle">CAVERN DASH</h2>
-          <p class="description" id="overlayDescription">Four dangerous caverns. Collect every glowing crystal, dodge the cave creatures, and reach the exit before your air runs out.</p>
+          <p class="description" id="overlayDescription">Twelve handcrafted caverns. Discover moving lifts, crumbling ledges, timed hazards, springs, and hidden oxygen supplies.</p>
           <button class="bigButton" id="playButton" type="button">START ADVENTURE</button>
+          <details class="practice" id="practicePanel"><summary>Or practise any cavern</summary>
+            <div class="practiceInner"><label for="practiceSelect">Choose a level</label><select id="practiceSelect" aria-label="Choose practice cavern"></select>
+              <button id="practiceButton" type="button">PLAY SELECTED CAVERN</button></div>
+          </details>
           <p class="hint" id="overlayHint">Move <span class="key">←</span> <span class="key">→</span> · Jump <span class="key">SPACE</span><br>Gamepad: left stick / D-pad + A · Start to begin</p>
         </div>
       </div>
@@ -115,46 +125,102 @@
     <div class="mobileCluster"><button type="button" class="touchBtn" id="leftTouch" aria-label="Move left">◀</button><button type="button" class="touchBtn" id="rightTouch" aria-label="Move right">▶</button></div>
     <button type="button" class="touchBtn jump" id="jumpTouch">JUMP</button>
   </div>
-  <p class="controls"><strong>Keyboard:</strong> ← / → or A / D to move · Space / W / ↑ to jump · P / Esc to pause · M to mute. &nbsp; <strong>Controller:</strong> D-pad / stick, A to jump, Start to pause. Your progress resets when you lose a life — old-school rules!</p>
+  <p class="controls"><strong>Keyboard:</strong> ← / → or A / D to move · Space / W / ↑ to jump · P / Esc to pause · M to mute. &nbsp; <strong>Controller:</strong> D-pad / stick, A to jump, Start to pause. Choose a cavern to practise, or tackle all twelve in Adventure mode. Losing a life restarts the current cavern.</p>
   <p class="footnote">Original game code, artwork, sound and level layouts. Inspired by 1980s single-screen platform adventures; not an official Manic Miner release. Works offline.</p>
 </main>
 <script>
 (() => {
   'use strict';
-  const W=840,H=500,GRAVITY=920,SPEED=205,JUMP=-448,PL_H=16,MAX_FALL=170;
+  const W=840,H=500,GRAVITY=920,SPEED=205,JUMP=-448,PL_H=16,MAX_FALL=190;
   const canvas=document.querySelector('#game'), ctx=canvas.getContext('2d',{alpha:false});
   const $=s=>document.querySelector(s);
   const overlay=$('#overlay'),playButton=$('#playButton');
   const e={level:$('#levelLabel'),score:$('#scoreLabel'),gems:$('#gemsLabel'),air:$('#airBar'),lives:$('#livesLabel'),name:$('#cavernName'),status:$('#status')};
   const floor=(x,w)=>({x,y:450,w,h:50,kind:'ground'});
+  // Every mechanic uses regular rectangular collision boxes; all stages work offline.
+  const mover=(x,y,w,min,max,speed,axis='x')=>({x,y,w,h:16,kind:'moving',min,max,speed,axis,sign:1});
+  const vent=(x,y,w=28,offset=0,period=3,activeFor=1.1)=>({x,y,w,h:42,offset,period,activeFor});
+  const oxygen=(x,y,value=24)=>({x,y,value,active:true});
   const plat=(x,y,w,kind='stone')=>({x,y,w,h:PL_H,kind});
   const gem=(x,y)=>({x,y,active:true,phase:Math.random()*6.28});
   const monster=(x,y,min,max,speed,type='robot',axis='x')=>({x,y,min,max,speed,type,axis,w:type==='bat'?28:25,h:type==='bat'?18:24,sign:1,startX:x,startY:y});
   const levels=[
-    {name:'THE COPPER PASSAGE',color:'#50dce0',rock:'#263454',air:96,
+    {name:'THE COPPER PASSAGE',tip:'The first rule: collect every crystal, then reach the glowing door.',theme:'copper',color:'#50dce0',rock:'#263454',air:96,
       platforms:[floor(0,840),plat(205,365,145),plat(420,278,160,'copper'),plat(615,365,135)],
       gems:[gem(129,427),gem(270,342),gem(489,255),gem(683,343)],
       enemies:[monster(543,426,510,585,64,'blob'),monster(620,426,615,735,69,'robot')],
       spikes:[],exit:{x:787,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:105,y:408},{x:735,y:324}]},
-    {name:'THE GLOWWORM GROTTO',color:'#9c7aff',rock:'#29274a',air:104,
+    {name:'THE GLOWWORM GROTTO',tip:'Watch your landing: gaps and flying cave dwellers await.',theme:'glow',color:'#9c7aff',rock:'#29274a',air:104,
       platforms:[floor(0,330),floor(420,420),plat(155,361,142,'violet'),plat(353,330,142,'violet'),plat(568,360,143)],
       gems:[gem(102,427),gem(222,338),gem(420,307),gem(646,337)],
       enemies:[monster(230,426,178,302,80,'robot'),monster(400,292,371,472,63,'bat'),monster(662,426,568,788,94,'blob')],
-      spikes:[{x:330,y:479,w:90,h:21}],exit:{x:785,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:130,y:410},{x:736,y:400}]},
-    {name:'THE CLOCKWORK CAVERN',color:'#ffab65',rock:'#383049',air:110,
+      spikes:[{x:330,y:479,w:90,h:21,kind:'spike'}],exit:{x:785,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:130,y:410},{x:736,y:400}]},
+    {name:'THE CLOCKWORK CAVERN',tip:'Time your jumps between patrols and watch for floor spikes.',theme:'clock',color:'#ffab65',rock:'#383049',air:110,
       platforms:[floor(0,840),plat(123,362,170,'copper'),plat(336,278,171),plat(550,365,175,'copper')],
       gems:[gem(172,338),gem(420,254),gem(633,341),gem(772,428)],
       enemies:[monster(200,426,120,330,90,'robot'),monster(375,252,349,478,93,'robot'),monster(602,335,556,695,84,'bat'),monster(725,426,688,787,112,'blob')],
-      spikes:[{x:313,y:434,w:45,h:16}],exit:{x:791,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:80,y:410},{x:520,y:240}]},
-    {name:'THE CRYSTAL HEART',color:'#77eea3',rock:'#19374a',air:118,
+      spikes:[{x:313,y:434,w:45,h:16,kind:'spike'}],exit:{x:791,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:80,y:410},{x:520,y:240}]},
+    {name:'THE CRYSTAL HEART',tip:'Take the high route across the two deep chasms.',theme:'crystal',color:'#77eea3',rock:'#19374a',air:118,
       platforms:[floor(0,263),floor(375,192),floor(674,166),plat(211,357,130,'violet'),plat(399,273,157,'stone'),plat(584,359,148,'violet')],
       gems:[gem(92,427),gem(268,334),gem(475,249),gem(643,336),gem(762,426)],
       enemies:[monster(176,426,102,242,92,'blob'),monster(442,247,410,526,97,'robot'),monster(598,331,591,712,103,'bat'),monster(732,426,689,796,116,'robot')],
-      spikes:[{x:263,y:479,w:112,h:21},{x:567,y:479,w:107,h:21}],exit:{x:789,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:180,y:317},{x:565,y:234}]}
+      spikes:[{x:263,y:479,w:112,h:21,kind:'spike'},{x:567,y:479,w:107,h:21,kind:'spike'}],exit:{x:789,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:180,y:317},{x:565,y:234}]},
+    {name:'THE SUNKEN RESERVOIR',tip:'Ride the floating lift over deep water. Blue oxygen tanks refill your air.',theme:'water',color:'#56e8d5',rock:'#1d4055',air:120,
+      platforms:[floor(0,255),floor(595,245),plat(207,378,148),plat(550,378,147)],
+      movers:[mover(364,343,123,354,465,68)],
+      gems:[gem(84,427),gem(278,353),gem(435,316),gem(619,353),gem(756,427)],
+      airPacks:[oxygen(453,310,25)],
+      enemies:[monster(143,426,104,228,70,'blob'),monster(711,426,638,785,88,'robot'),monster(512,259,235,310,56,'bat','y')],
+      spikes:[{x:255,y:478,w:340,h:22,kind:'water'}],exit:{x:787,y:400,w:33,h:50},start:{x:42,y:422},torches:[]},
+    {name:'THE EMBER FOUNDRY',tip:'Arrow-marked conveyor belts push you. Fire vents pulse on and off.',theme:'lava',color:'#ff995f',rock:'#542d34',air:120,
+      platforms:[floor(0,840),{...plat(150,364,180,'belt'),belt:80},{...plat(415,280,160,'belt'),belt:-75},plat(627,365,153,'copper')],
+      gems:[gem(96,427),gem(232,338),gem(485,253),gem(697,341),gem(790,427)],
+      enemies:[monster(335,426,280,435,92,'robot'),monster(718,426,657,785,87,'spark')],
+      vents:[vent(464,408,32,1.4,3.5,1.2),vent(770,408,28,.5,3.2,.9)],
+      spikes:[{x:572,y:435,w:46,h:15,kind:'spike'}],exit:{x:795,y:400,w:33,h:50},start:{x:38,y:422},torches:[{x:99,y:411}]},
+    {name:'THE VERTICAL SHAFT',tip:'Climb the staircase. Some bats patrol up and down rather than sideways.',theme:'shaft',color:'#90bfff',rock:'#263653',air:126,
+      platforms:[floor(0,225),floor(660,180),plat(174,371,150),plat(337,300,145),plat(507,232,147),plat(655,306,151)],
+      gems:[gem(92,427),gem(228,346),gem(398,275),gem(562,207),gem(734,280),gem(778,427)],
+      enemies:[monster(196,426,119,213,74,'blob'),monster(414,262,213,296,67,'bat','y'),monster(578,192,172,271,75,'bat','y'),monster(725,426,678,785,88,'robot')],
+      spikes:[{x:225,y:480,w:435,h:20,kind:'spike'}],exit:{x:792,y:400,w:33,h:50},start:{x:42,y:422},torches:[{x:183,y:334}]},
+    {name:'THE SPORE GARDEN',tip:'Bright green spring pads launch you higher than an ordinary jump.',theme:'fungal',color:'#b0f58a',rock:'#2e4140',air:128,
+      platforms:[floor(0,840),plat(235,286,158),plat(433,340,152,'crumble'),plat(627,286,145),plat(145,449,70,'spring'),plat(525,449,72,'spring')],
+      gems:[gem(95,427),gem(298,262),gem(500,315),gem(694,262),gem(788,427)],
+      enemies:[monster(388,426,295,495,79,'blob'),monster(460,275,247,337,65,'bat','y'),monster(723,426,650,793,89,'blob')],
+      spikes:[{x:602,y:435,w:36,h:15,kind:'spike'}],exit:{x:793,y:400,w:33,h:50},start:{x:40,y:422},torches:[]},
+    {name:'THE PHANTOM GALLERY',tip:'Shimmering blue ledges fade away. Watch their timing before crossing.',theme:'phantom',color:'#97beff',rock:'#262950',air:132,
+      platforms:[floor(0,840),{...plat(166,364,145,'phase'),period:3.7,activeFor:2.65,offset:0},{...plat(365,277,158,'phase'),period:4,activeFor:2.9,offset:1.3},{...plat(566,365,154,'phase'),period:3.6,activeFor:2.65,offset:1.1}],
+      gems:[gem(91,427),gem(232,339),gem(442,252),gem(641,340),gem(779,427)],
+      enemies:[monster(326,426,278,395,85,'spark'),monster(538,426,509,608,80,'robot'),monster(741,426,700,797,83,'blob')],
+      spikes:[{x:454,y:435,w:35,h:15,kind:'spike'}],exit:{x:792,y:400,w:33,h:50},start:{x:40,y:422},torches:[]},
+    {name:'THE THUNDER CATWALK',tip:'Moving platforms carry you across electrified water. Keep an eye on the sky.',theme:'storm',color:'#a3d8ff',rock:'#213752',air:135,
+      platforms:[floor(0,268),floor(594,246),plat(420,280,147),plat(560,370,153)],
+      movers:[mover(276,365,146,272,402,88)],
+      gems:[gem(88,427),gem(343,339),gem(484,254),gem(650,345),gem(769,427)],
+      airPacks:[oxygen(506,248,19)],
+      enemies:[monster(178,426,115,237,78,'robot'),monster(670,284,244,342,87,'bat','y'),monster(753,426,717,791,95,'spark')],
+      vents:[vent(693,408,26,1.1,3.5,1.1)],
+      spikes:[{x:268,y:478,w:326,h:22,kind:'electric'}],exit:{x:791,y:400,w:33,h:50},start:{x:38,y:422},torches:[]},
+    {name:'THE FROZEN VAULT',tip:'Ice is slippery! Allow extra space for stopping and turning around.',theme:'ice',color:'#adf4ff',rock:'#283953',air:139,
+      platforms:[floor(0,840),plat(130,364,178,'ice'),plat(345,277,164,'ice'),plat(570,364,157,'ice')],
+      gems:[gem(90,427),gem(221,339),gem(420,252),gem(645,339),gem(770,427)],
+      enemies:[monster(315,426,280,390,83,'robot'),monster(566,240,214,306,81,'bat','y'),monster(750,426,690,802,90,'spark')],
+      spikes:[{x:522,y:436,w:38,h:14,kind:'ice'}],exit:{x:792,y:400,w:33,h:50},start:{x:40,y:422},torches:[]},
+    {name:'THE MOUNTAIN CORE',tip:'Everything together: springs, lifts, fading steps and dangerous fire.',theme:'core',color:'#ffdb7c',rock:'#42304a',air:155,
+      platforms:[floor(0,305),floor(415,425),plat(104,449,65,'spring'),plat(232,304,145),{...plat(543,268,160,'phase'),period:4.4,activeFor:3.1,offset:.8},plat(702,354,133)],
+      movers:[mover(364,342,132,335,465,79)],
+      gems:[gem(74,427),gem(291,279),gem(428,315),gem(607,242),gem(758,329),gem(782,426)],
+      airPacks:[oxygen(467,310,21)],
+      enemies:[monster(184,426,178,285,84,'robot'),monster(494,287,250,349,90,'bat','y'),monster(745,426,706,791,91,'spark')],
+      vents:[vent(662,408,27,1.4,3.3,1.1)],
+      spikes:[{x:305,y:478,w:110,h:22,kind:'spike'}],exit:{x:792,y:400,w:33,h:50},start:{x:42,y:422},torches:[]}
   ];
-  const game={mode:'title',levelIndex:0,score:0,lives:3,highScore:0,air:100,player:null,items:[],enemies:[],particles:[],time:0,levelScoreStart:0,deathFlag:false};
+  const game={mode:'title',levelIndex:0,score:0,lives:3,highScore:0,air:100,player:null,items:[],enemies:[],particles:[],platforms:[],movers:[],airPacks:[],levelTime:0,time:0,levelScoreStart:0,deathFlag:false,practice:false};
   try {game.highScore=Number(localStorage.getItem('cavernDashHighScore'))||0;} catch (_) {}
   let muted=false,audio=null,previousPadJump=false,previousPadStart=false,lastTime=0,accum=0;
+  const practiceSelect=$('#practiceSelect');
+  levels.forEach((lv,i)=>{const option=document.createElement('option');option.value=i;option.textContent=String(i+1).padStart(2,'0')+' — '+lv.name;practiceSelect.appendChild(option);});
+  $('#practiceButton').addEventListener('click',()=>startGame(Number(practiceSelect.value)));
   const keys=new Set(),touch={left:false,right:false,jump:false},control={jumpQueued:false};
   const random=(min,max)=>min+Math.random()*(max-min);
   const overlap=(a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
@@ -178,7 +244,7 @@
     e.air.style.width=(Math.max(0,game.air)/levels[game.levelIndex].air*100).toFixed(1)+'%';
     e.air.style.background=game.air<23?'#fd647c':game.air<45?'#ffd466':'linear-gradient(90deg,#38edc6,#d7ef75)';
     e.lives.textContent=Array.from({length:Math.max(0,game.lives)},()=> '♥').join(' ');
-    e.name.textContent=String(game.levelIndex+1).padStart(2,'0')+' — '+levels[game.levelIndex].name;
+    e.name.textContent=(game.practice?'PRACTICE · ':'')+String(game.levelIndex+1).padStart(2,'0')+' — '+levels[game.levelIndex].name;
   }
   function overlayShow(title,desc,button,eyebrow,hint='Move with arrows · Jump with Space · Gamepad A / Start'){
     $('#overlayTitle').textContent=title;$('#overlayDescription').textContent=desc;$('#overlayEyebrow').textContent=eyebrow;
@@ -190,12 +256,18 @@
     game.air=level.air;
     game.items=level.gems.map(g=>({...g,active:true}));
     game.enemies=level.enemies.map(m=>({...m}));
+    game.platforms=level.platforms.map(p=>({...p,crumbled:false,crumbleTimer:0,respawnTimer:0}));
+    game.movers=(level.movers||[]).map(m=>({...m,deltaX:0,deltaY:0}));
+    game.airPacks=(level.airPacks||[]).map(a=>({...a,active:true}));
+    game.levelTime=0;
     game.particles=[];
-    game.player={x:level.start.x,y:level.start.y,w:19,h:28,vx:0,vy:0,grounded:false,coyote:0,invulnerable:clearLives?1.1:0.6,fallOrigin:level.start.y,landed:false,face:1};
+    game.player={x:level.start.x,y:level.start.y,w:19,h:28,vx:0,vy:0,grounded:false,coyote:0,invulnerable:clearLives?1.1:0.6,fallOrigin:level.start.y,landed:false,face:1,support:null,springFlight:false};
     updateHud();
   }
-  function startGame(){
-    game.score=0;game.lives=3;game.levelIndex=0;game.time=0;game.levelScoreStart=0;
+  function startGame(practiceLevel=null){
+    game.practice=Number.isInteger(practiceLevel)&&practiceLevel>=0&&practiceLevel<levels.length;
+    game.score=0;game.lives=3;game.levelIndex=game.practice?practiceLevel:0;game.time=0;game.levelScoreStart=0;
+    $('#practicePanel').open=false;
     resetLevel(true);game.mode='playing';overlayHide();sound(480,.07,'square',.04,320);setTimeout(()=>sound(680,.12,'square',.026,170),100);
   }
   function pauseToggle(){
@@ -203,10 +275,10 @@
     else if(game.mode==='paused'){game.mode='playing';overlayHide();}
   }
   function saveHighScore(){
-    if(game.score>game.highScore){ game.highScore=game.score;try{localStorage.setItem('cavernDashHighScore',String(game.highScore));}catch(_){} }
+    if(!game.practice&&game.score>game.highScore){ game.highScore=game.score;try{localStorage.setItem('cavernDashHighScore',String(game.highScore));}catch(_){} }
   }
   function gameOver(){game.mode='gameover';saveHighScore();sound(320,.42,'sawtooth',.03,-250);overlayShow('GAME OVER','Your expedition ended in the deep. Score: '+game.score.toLocaleString()+' · Best: '+game.highScore.toLocaleString()+' points.','TRY AGAIN','NO MORE LIVES','Press Enter or gamepad Start to try again');}
-  function win(){game.score+=Math.ceil(game.air)*20;saveHighScore();game.mode='won';updateHud();sound(500,.4,'square',.03,800);overlayShow('YOU ESCAPED!','All four original caverns cleared! Final score: '+game.score.toLocaleString()+'. Best: '+game.highScore.toLocaleString()+'.','PLAY AGAIN','CAVERN DASH · COMPLETE','Press Enter or gamepad Start to play again');}
+  function win(){game.score+=Math.ceil(game.air)*20;saveHighScore();game.mode='won';updateHud();sound(500,.4,'square',.03,800);overlayShow(game.practice?'CAVERN CLEARED!':'YOU ESCAPED!',(game.practice?'Practice cavern cleared! ':'All twelve caverns conquered! ')+'Final score: '+game.score.toLocaleString()+'. Best adventure score: '+game.highScore.toLocaleString()+'.','PLAY AGAIN','CAVERN DASH · COMPLETE','Press Enter or gamepad Start to play again');}
   function loseLife(){
     if(game.mode!=='playing')return;
     sound(310,.4,'sawtooth',.035,-260);
@@ -218,7 +290,7 @@
   }
   function advanceLevel(){
     sound(550,.25,'square',.035,400);
-    if(game.levelIndex===levels.length-1){win();return;}
+    if(game.practice||game.levelIndex===levels.length-1){win();return;}
     game.score+=Math.ceil(game.air)*20;
     game.levelIndex++;
     game.levelScoreStart=game.score;
@@ -236,8 +308,8 @@
       start=!!(pad.buttons[9]?.pressed);
       e.status.textContent=pad.id.slice(0,30)+' connected';
     }
-    if(jump&&!previousPadJump){ if(game.mode==='playing')control.jumpQueued=true;else if(game.mode==='title'||game.mode==='gameover'||game.mode==='won')startGame(); }
-    if(start&&!previousPadStart){if(game.mode==='title'||game.mode==='gameover'||game.mode==='won')startGame();else pauseToggle();}
+    if(jump&&!previousPadJump){ if(game.mode==='playing')control.jumpQueued=true;else if(game.mode==='title'||game.mode==='gameover'||game.mode==='won')startGame(game.practice?game.levelIndex:null); }
+    if(start&&!previousPadStart){if(game.mode==='title'||game.mode==='gameover'||game.mode==='won')startGame(game.practice?game.levelIndex:null);else pauseToggle();}
     previousPadJump=jump;previousPadStart=start;
     return {left,right};
   }
@@ -246,34 +318,67 @@
     const pad=gamepadPoll();
     if(game.mode!=='playing')return;
     const level=levels[game.levelIndex],p=game.player;
+    game.levelTime+=dt;
     game.air-=dt;
     if(game.air<=0){loseLife();return;}
     p.invulnerable=Math.max(0,p.invulnerable-dt);
+    // Move lifts before physics, preserving the player's footing while riding one.
+    for(const m of game.movers){
+      const before=m[m.axis];m[m.axis]+=m.speed*m.sign*dt;
+      if(m[m.axis]>=m.max){m[m.axis]=m.max;m.sign=-1;}
+      if(m[m.axis]<=m.min){m[m.axis]=m.min;m.sign=1;}
+      m.deltaX=m.axis==='x'?m[m.axis]-before:0;
+      m.deltaY=m.axis==='y'?m[m.axis]-before:0;
+    }
+    if(p.grounded&&p.support){
+      p.x+=p.support.deltaX||0;
+      p.y+=p.support.deltaY||0;
+      if(p.support.kind==='belt')p.x+=p.support.belt*dt;
+    }
+    // Collapsing platforms fall away shortly after you stand on them.
+    for(const platform of game.platforms){
+      if(platform.kind!=='crumble')continue;
+      if(platform.crumbled){platform.respawnTimer-=dt;if(platform.respawnTimer<=0){platform.crumbled=false;platform.crumbleTimer=0;}}
+      else if(platform.crumbleTimer>0){platform.crumbleTimer+=dt;if(platform.crumbleTimer>.85){platform.crumbled=true;platform.respawnTimer=3.2;}}
+    }
     const left=keys.has('ArrowLeft')||keys.has('KeyA')||touch.left||pad.left;
     const right=keys.has('ArrowRight')||keys.has('KeyD')||touch.right||pad.right;
-    p.vx=(Number(right)-Number(left))*SPEED;
+    const desired=(Number(right)-Number(left))*SPEED;
+    if(p.support?.kind==='ice'&&p.grounded){
+      const acceleration=desired?850:340;
+      p.vx+=Math.max(-acceleration*dt,Math.min(acceleration*dt,desired-p.vx));
+    }else p.vx=desired;
     if(p.vx)p.face=Math.sign(p.vx);
     if(p.grounded)p.coyote=.085;
     else p.coyote=Math.max(0,p.coyote-dt);
-    if(control.jumpQueued && p.coyote>0){p.vy=JUMP;p.grounded=false;p.coyote=0; p.fallOrigin=p.y; sound(260,.11,'square',.016,220);}
+    if(control.jumpQueued && p.coyote>0){p.vy=JUMP;p.grounded=false;p.support=null;p.coyote=0; p.fallOrigin=p.y; sound(260,.11,'square',.016,220);}
     control.jumpQueued=false;
     p.x=Math.max(0,Math.min(W-p.w,p.x+p.vx*dt));
     const previousBottom=p.y+p.h;
     p.vy=Math.min(840,p.vy+GRAVITY*dt);
     p.y+=p.vy*dt;
-    let landed=false;
+    let landed=null;
     if(p.vy>=0){
       let bestY=Infinity;
-      for(const platform of level.platforms){
-        if(p.x+p.w>platform.x+3 && p.x<platform.x+platform.w-3 && previousBottom<=platform.y+9 && p.y+p.h>=platform.y && platform.y<bestY)bestY=platform.y;
+      const allPlatforms=game.platforms.concat(game.movers);
+      for(const platform of allPlatforms){
+        if(platform.crumbled || (platform.kind==='phase'&&!phaseActive(platform)))continue;
+        if(p.x+p.w>platform.x+3 && p.x<platform.x+platform.w-3 && previousBottom<=platform.y+9 && p.y+p.h>=platform.y && platform.y<bestY){bestY=platform.y;landed=platform;}
       }
-      if(bestY!==Infinity){
-        if(!p.grounded && p.vy>0 && bestY-(p.fallOrigin+p.h)>MAX_FALL){loseLife();return;}
-        p.y=bestY-p.h;p.vy=0;landed=true;
+      if(landed){
+        if(!p.grounded && p.vy>0 && bestY-(p.fallOrigin+p.h)>MAX_FALL && !p.springFlight){loseLife();return;}
+        p.y=bestY-p.h;p.vy=0;
+        if(landed.kind==='spring'){
+          p.vy=-622;p.fallOrigin=p.y;p.grounded=false;p.support=null;p.coyote=0;p.springFlight=true;
+          sound(430,.2,'triangle',.035,450);burst(p.x+10,bestY,'#b7ff82',9);
+          landed=null;
+        }else if(landed.kind==='crumble'&&landed.crumbleTimer===0)landed.crumbleTimer=.001;
       }
     }
-    if(!landed && p.grounded)p.fallOrigin=p.y;
-    p.grounded=landed;
+    if(!landed&&p.grounded)p.fallOrigin=p.y;
+    p.grounded=!!landed;
+    p.support=landed;
+    if(landed)p.springFlight=false;
     if(p.y>H+40){loseLife();return;}
     for(const m of game.enemies){
       m[m.axis]+=m.speed*m.sign*dt;
@@ -282,6 +387,15 @@
       if(p.invulnerable<=0&&overlap(p,m)){loseLife();return;}
     }
     for(const s of level.spikes){if(overlap(p,s)){loseLife();return;}}
+    for(const v of level.vents||[]){
+      if(ventActive(v)&&overlap(p,{x:v.x+4,y:v.y,w:v.w-8,h:v.h})){loseLife();return;}
+    }
+    for(const tank of game.airPacks){
+      if(tank.active&&overlap(p,{x:tank.x-12,y:tank.y-14,w:24,h:28})){
+        tank.active=false;game.air=Math.min(level.air,game.air+tank.value);game.score+=100;
+        sound(390,.19,'sine',.035,450);burst(tank.x,tank.y,'#79d9ff',16);
+      }
+    }
     for(const crystal of game.items){
       if(crystal.active&&overlap(p,{x:crystal.x-10,y:crystal.y-12,w:20,h:24})){
         crystal.active=false;game.score+=250;sound(660,.12,'triangle',.04,460);burst(crystal.x,crystal.y,level.color,13);
@@ -293,28 +407,50 @@
     game.particles=game.particles.filter(part=>part.life>0);
     updateHud();
   }
+  function phaseActive(p){return ((game.levelTime+(p.offset||0))%p.period)<p.activeFor;}
+  function ventActive(v){return ((game.levelTime+(v.offset||0))%v.period)<v.activeFor;}
   function rect(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
   function drawDiamond(cx,cy,r,col){
     ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(Math.round(cx),Math.round(cy-r));ctx.lineTo(Math.round(cx+r),Math.round(cy));ctx.lineTo(Math.round(cx),Math.round(cy+r));ctx.lineTo(Math.round(cx-r),Math.round(cy));ctx.closePath();ctx.fill();
     rect(cx-2,cy-r+4,3,5,'#fffff0');
   }
   function background(level){
-    ctx.fillStyle='#040817';ctx.fillRect(0,0,W,H);
-    for(let i=0;i<60;i++){
+    const palette={copper:['#040817','#101b35'],glow:['#09051c','#29164d'],clock:['#190d18','#3a2433'],crystal:['#041b21','#123e3c'],water:['#041b2e','#0b4d60'],lava:['#2b0c12','#713222'],shaft:['#091023','#1d3352'],fungal:['#0d211d','#23482a'],phantom:['#100f31','#302256'],storm:['#10152e','#22365c'],ice:['#081c34','#2b526d'],core:['#2b1117','#6a2c2e']};
+    const pal=palette[level.theme]||palette.copper;
+    ctx.fillStyle=pal[0];ctx.fillRect(0,0,W,H);
+    for(let i=0;i<65;i++){
       const x=(i*151+29)%W,y=(i*109+19)%H;
-      const alpha=.08+Math.sin(game.time*1.4+i)*.04;
-      rect(x,y,(i%4===0)?3:2,2,`rgba(149,184,240,${alpha})`);
+      const alpha=.07+Math.sin(game.time*1.4+i)*.035;
+      rect(x,y,(i%4===0)?3:2,2,`rgba(171,213,241,${alpha})`);
     }
-    // Jagged silhouettes are procedural and unique to this game.
-    ctx.fillStyle='#0d152b';ctx.beginPath();ctx.moveTo(0,0);
+    ctx.fillStyle=pal[1];ctx.beginPath();ctx.moveTo(0,0);
     for(let x=0;x<=W+25;x+=25){const y=35+Math.sin(x*.023)*14+Math.sin(x*.07)*8;ctx.lineTo(x,y);}ctx.lineTo(W,0);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#0b1125';ctx.beginPath();ctx.moveTo(0,H);
-    for(let x=0;x<=W+25;x+=25){let y=385+Math.sin(x*.035)*22+Math.cos(x*.09)*7;ctx.lineTo(x,y);}ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+    ctx.fillStyle=pal[1];ctx.beginPath();ctx.moveTo(0,H);
+    for(let x=0;x<=W+25;x+=25){let y=392+Math.sin(x*.035)*22+Math.cos(x*.09)*7;ctx.lineTo(x,y);}ctx.lineTo(W,H);ctx.closePath();ctx.fill();
     rect(0,0,8,H,level.rock);rect(W-8,0,8,H,level.rock);
-    for(let x=0;x<W;x+=40){const h=15+(x*7%36);rect(x,0,14,h,'#151e39');rect(x+5,0,4,h-5,'#1e2943');}
+    for(let x=0;x<W;x+=40){const h=15+(x*7%36);rect(x,0,14,h,level.rock);rect(x+5,0,4,h-5,pal[1]);}
     for(let i=0;i<18;i++){
       let x=(i*127+76)%W,y=(i*83+92)%(H-65);
-      rect(x,y,13,3,level.rock);rect(x+4,y+3,9,3,'#0d1630');
+      rect(x,y,13,3,level.rock);rect(x+4,y+3,9,3,pal[1]);
+    }
+    if(level.theme==='water'||level.theme==='storm'){
+      rect(0,480,W,20,level.theme==='storm'?'#205c84':'#176275');
+      for(let x=0;x<W;x+=24){rect(x,480+3*Math.sin(game.time*3+x),14,2,level.theme==='storm'?'#7ff2ff':'#52bdcb');}
+    }
+    if(level.theme==='lava'||level.theme==='core'){
+      for(let x=22;x<W;x+=88){const h=8+Math.abs(Math.sin(game.time*2+x))*12;rect(x,481-h,17,h,'#df603a');rect(x+3,481-h+3,9,h-3,'#ffcd6e');}
+    }
+    if(level.theme==='fungal'){
+      for(let x=35;x<840;x+=118){rect(x+11,399,5,46,'#326f6a');rect(x,391,29,12,'#71c985');rect(x+5,389,7,4,'#dbed9c');rect(x+20,394,5,3,'#dbed9c');}
+      for(let x=52;x<840;x+=105){ctx.globalAlpha=.3;rect(x,175+(x%3)*53,6,6,'#a5ffb1');ctx.globalAlpha=1;}
+    }
+    if(level.theme==='ice'){for(let x=40;x<840;x+=63){ctx.fillStyle='#6bafc9';ctx.beginPath();ctx.moveTo(x,18);ctx.lineTo(x+13,18);ctx.lineTo(x+7,47+(x%4)*7);ctx.fill();}}
+    if(level.theme==='storm' && Math.sin(game.time*2.2)>.97){rect(0,0,W,H,'rgba(194,228,255,.11)');rect(735,60,4,125,'#b6f9ff');rect(725,181,13,4,'#b6f9ff');}
+    if(level.theme==='phantom'){
+      for(let x=90;x<830;x+=155){ctx.globalAlpha=.2+.11*Math.sin(game.time+x);rect(x,53,2,330,'#b4b8ff');ctx.globalAlpha=1;}
+    }
+    if(level.theme==='shaft'){
+      for(let x=145;x<820;x+=140){rect(x,48,9,405,'#1a2e4b');rect(x+5,62,3,380,'#304a6b');}
     }
     for(const t of level.torches){
       rect(t.x-3,t.y+1,7,12,'#4f4856');
@@ -323,22 +459,57 @@
     }
   }
   function drawPlatforms(level){
-    for(const p of level.platforms){
-      const top=p.kind==='violet'?'#9c75df':p.kind==='copper'?'#f9ab6e':level.color;
-      const body=p.kind==='ground'?'#2d3150':'#26344e';
+    for(const p of game.platforms.concat(game.movers)){
+      const active=p.kind!=='phase'||phaseActive(p);
+      if(p.crumbled)continue;
+      ctx.globalAlpha=active?1:.3;
+      const top=p.kind==='violet'?'#9c75df':p.kind==='copper'?'#f9ab6e':p.kind==='belt'?'#dfb077':p.kind==='ice'?'#b5f4ff':p.kind==='phase'?'#b69eff':p.kind==='spring'?'#a5f77c':p.kind==='moving'?'#f0d57c':level.color;
+      const body=p.kind==='ground'?'#2d3150':p.kind==='ice'?'#3d6a83':'#26344e';
       rect(p.x,p.y,p.w,p.h,body);rect(p.x,p.y,p.w,5,top);rect(p.x,p.y+5,p.w,2,'#131e35');
       for(let x=p.x+5;x<p.x+p.w-7;x+=18){rect(x,p.y+9,11,3,'#415373');rect(x+11,p.y+8,2,2,'#14213b');}
       if(p.kind==='ground'){
         rect(p.x,p.y+19,p.w,1,'#3c4265');
         for(let x=p.x+10;x<p.x+p.w-10;x+=33){rect(x,p.y+24,15,4,'#414060');rect(x+9,p.y+35,16,3,'#222640');}
       }
+      if(p.kind==='moving'){rect(p.x+3,p.y+5,p.w-6,6,'#546d8b');rect(p.x+13,p.y+8,10,3,'#f9d875');rect(p.x+p.w-23,p.y+8,10,3,'#f9d875');}
+      if(p.kind==='belt'){
+        for(let x=p.x+14;x<p.x+p.w-8;x+=23){const d=p.belt>0?1:-1;rect(x,p.y+6,10,4,'#f9d576');rect(x+(d>0?8:0),p.y+4,3,8,'#f9d576');}
+      }
+      if(p.kind==='spring'){rect(p.x+6,p.y+5,p.w-12,7,'#65af80');for(let x=p.x+10;x<p.x+p.w-11;x+=16){rect(x,p.y+3,6,6,'#e4ff7b');}}
+      if(p.kind==='phase'){for(let x=p.x+9;x<p.x+p.w-4;x+=17){rect(x,p.y+5,6,6,'#9c8cff');}}
+      if(p.kind==='ice')rect(p.x+9,p.y+3,Math.min(p.w-18,49),2,'#ffffff');
+      if(p.kind==='crumble'&&p.crumbleTimer>0){for(let x=p.x+8;x<p.x+p.w;x+=32){rect(x,p.y+5,2,11,'#ffad87');}}
+      ctx.globalAlpha=1;
     }
   }
   function drawSpikes(level){
     for(const s of level.spikes){
-      rect(s.x,s.y+s.h-6,s.w,6,'#ff587d');
-      ctx.fillStyle='#ff8d70';
+      if(s.kind==='water'||s.kind==='electric'){
+        rect(s.x,s.y,s.w,s.h,s.kind==='water'?'#15576f':'#1e567c');
+        for(let x=s.x+8;x<s.x+s.w;x+=20){rect(x,s.y+3+Math.sin(game.time*4+x)*2,12,3,s.kind==='water'?'#79e5e9':'#a9fbff');
+          if(s.kind==='electric'&&Math.sin(game.time*6+x)>.5)rect(x+5,s.y-7,2,10,'#c9ff7e');}
+        continue;
+      }
+      rect(s.x,s.y+s.h-6,s.w,6,s.kind==='ice'?'#63a8d0':'#ff587d');
+      ctx.fillStyle=s.kind==='ice'?'#beeeff':'#ff8d70';
       for(let x=s.x;x<s.x+s.w;x+=13){ctx.beginPath();ctx.moveTo(x,s.y+s.h-5);ctx.lineTo(x+7,s.y);ctx.lineTo(Math.min(x+14,s.x+s.w),s.y+s.h-5);ctx.fill();}
+    }
+  }
+  function drawVents(level){
+    for(const v of level.vents||[]){
+      const active=ventActive(v),phase=(game.levelTime+v.offset)%v.period;
+      rect(v.x,v.y+v.h-7,v.w,7,'#7f7183');
+      for(let x=v.x+3;x<v.x+v.w;x+=9)rect(x,v.y+v.h-5,5,3,'#1b2130');
+      if(active){for(let x=v.x+4;x<v.x+v.w-4;x+=8){const h=25+12*Math.abs(Math.sin(game.levelTime*11+x));rect(x,v.y+v.h-7-h,7,h,'#ed5a36');rect(x+2,v.y+v.h-7-h*.65,3,h*.65,'#ffe787');}}
+      else if(phase>v.period-.5){rect(v.x+4,v.y+v.h-10,v.w-8,3,'#ffd479');}
+    }
+  }
+  function drawAirPacks(){
+    for(const a of game.airPacks){if(!a.active)continue;
+      const bob=2*Math.sin(game.time*5+a.x);
+      rect(a.x-9,a.y-12+bob,18,24,'#3574af');rect(a.x-6,a.y-9+bob,12,18,'#8adfff');
+      rect(a.x-4,a.y-15+bob,8,3,'#f4f5fd');rect(a.x-1,a.y-7+bob,2,12,'#3d88b5');
+      ctx.fillStyle='#123558';ctx.font='bold 11px monospace';ctx.textAlign='center';ctx.fillText('O',a.x,a.y+5+bob);
     }
   }
   function drawExit(level){
@@ -364,6 +535,10 @@
         rect(x+2,y+12,4,10,'#58aa78');rect(x+19,y+12,4,10,'#58aa78');
         rect(x+7,y+10,4,5,'#0c2226');rect(x+15,y+10,4,5,'#0c2226');
         rect(x+7+step*2,y+22,5,2,'#58aa78');
+      }else if(m.type==='spark'){
+        rect(x+3,y+5,21,14,'#ffe178');rect(x+8,y+2,12,20,'#ec874e');
+        rect(x+5,y+8,5,5,'#51355c');rect(x+18,y+8,5,5,'#51355c');
+        rect(x+2,y+20,7,3,'#ffd17f');rect(x+17,y+20,7,3,'#ffd17f');
       }else{
         const wing=Math.sin(game.time*13+m.x)*6;
         rect(x+10,y+5,8,11,'#e080ec');rect(x+13,y+9,3,3,'#fff5cc');
@@ -396,7 +571,15 @@
   function draw(){
     const level=levels[game.levelIndex];
     ctx.imageSmoothingEnabled=false;
-    background(level);drawPlatforms(level);drawSpikes(level);drawExit(level);drawItems();drawEnemies();drawPlayer(game.player);drawParticles();
+    background(level);drawPlatforms(level);drawSpikes(level);drawVents(level);drawExit(level);drawItems();drawAirPacks();drawEnemies();drawPlayer(game.player);drawParticles();
+    if(game.mode==='playing'&&game.levelTime<5.2){
+      const fade=Math.min(1,(5.2-game.levelTime)*1.4);
+      ctx.globalAlpha=fade;
+      rect(82,14,676,54,'#0e1c36');rect(82,14,676,3,level.color);
+      ctx.fillStyle='#fff2cc';ctx.textAlign='center';ctx.font='bold 15px monospace';ctx.fillText(level.name,420,37);
+      ctx.font='12px monospace';ctx.fillStyle='#bdd3f2';ctx.fillText(level.tip,420,55);
+      ctx.globalAlpha=1;
+    }
     // Subtle scanlines: makes the pixel art feel like an original arcade screen.
     ctx.fillStyle='rgba(0,0,0,.055)';for(let y=0;y<H;y+=4)ctx.fillRect(0,y,W,1);
     if(game.mode==='playing'&&game.air<23&&Math.floor(game.time*3)%2===0){
@@ -411,7 +594,7 @@
     if(loops>=4)accum=0;
     draw();requestAnimationFrame(animate);
   }
-  function handleStart(){if(game.mode==='paused')pauseToggle();else startGame();}
+  function handleStart(){if(game.mode==='paused')pauseToggle();else startGame(game.practice?game.levelIndex:null);}
   playButton.addEventListener('click',handleStart);
   $('#fullscreenButton').addEventListener('click',async()=>{
     const elem=$('.arcade');
@@ -424,8 +607,8 @@
     if(!keys.has(ev.code)){
       if(['Space','ArrowUp','KeyW'].includes(ev.code)&&game.mode==='playing')control.jumpQueued=true;
       if(ev.code==='KeyP'||ev.code==='Escape'){pauseToggle();}
-      if(ev.code==='Enter'&&['title','gameover','won'].includes(game.mode))startGame();
-      if(ev.code==='KeyQ'&&game.mode==='paused'){game.mode='title';overlayShow('CAVERN DASH','Four dangerous caverns. Collect every crystal and reach the exit before your air runs out.','START ADVENTURE','INSERT IMAGINATION · PRESS START','Move: ← → / A D · Jump: Space · Gamepad A / Start');}
+      if(ev.code==='Enter'&&['title','gameover','won'].includes(game.mode)&&!ev.target.closest('#practicePanel'))startGame(game.practice?game.levelIndex:null);
+      if(ev.code==='KeyQ'&&game.mode==='paused'){game.mode='title';overlayShow('CAVERN DASH','Twelve original caverns. Collect every crystal and reach the exit before your air runs out.','START ADVENTURE','INSERT IMAGINATION · PRESS START','Move: ← → / A D · Jump: Space · Gamepad A / Start');}
       if(ev.code==='KeyM'){$('#soundButton').click();}
     }
     keys.add(ev.code);
