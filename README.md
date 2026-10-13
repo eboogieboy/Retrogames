@@ -1,29 +1,32 @@
 # Retro Games Arcade
 
-A growing collection of original, retro-inspired browser games. Designed for phones, computers, and eventually the Snug Party Console.
+A growing collection of original browser games for phone, PC, and the planned Snug Party Console. No account, installation, or build tools required.
 
-## Play Cavern Dash
+## Play now
 
-Once GitHub Pages is enabled for this repository:
 - **Arcade homepage:** https://eboogieboy.github.io/Retrogames/
-- **Direct game link:** https://eboogieboy.github.io/Retrogames/cavern-dash/
+- **Cavern Dash:** https://eboogieboy.github.io/Retrogames/cavern-dash/
 
-Cavern Dash is a four-level, single-screen cave platform game with collectibles, enemies, a timer, retro synthesized sound and a local high score.
+### Cavern Dash — Expanded Edition (v0.2)
 
-**Controls**
-- Phone/tablet: on-screen left, right and jump buttons.
-- Keyboard: arrows or A/D to move; Space, W or up arrow to jump; P to pause.
-- Game controller: D-pad or left stick to move; A to jump; Start to pause.
+12 unique, single-screen caverns. Explore moving lifts, fading platforms, springs, conveyors, timed fire vents, changing ice physics, and oxygen tanks.
 
-No build process or external dependencies. HTML and JavaScript files can be opened locally.
+**Adventure mode:** Complete all twelve levels with three lives and a local high score.
 
-## Deployment
+**Practice mode:** Open **Or practise any cavern** on the title screen and jump straight into any stage. Practice sessions do not affect the Adventure high score.
 
-On GitHub, open **Settings → Pages**, set **Source: Deploy from a branch**, choose **main** and **/(root)**, then click **Save**. After the Pages build completes, open the URLs above. Future changes pushed to main will publish automatically.
+**Controls:**
+- Touchscreen: left/right and jump.
+- Keyboard: arrow keys/A/D to move, Space/W/Up to jump, P/Escape to pause, M to mute.
+- Controller: D-pad/left stick to move, A/B to jump, Start to pause.
 
-## Project layout
+## Project structure
 
-- `index.html` — Retro Games launch page
-- `cavern-dash/index.html` — standalone browser game
+- `index.html` — Retro Games launcher / homepage
+- `cavern-dash/index.html` — standalone playable Cavern Dash
 
-This is an original project inspired by 1980s platform games, not an official release of Manic Miner or any other commercial game.
+## GitHub Pages
+
+Publish from **Settings → Pages → Deploy from a branch → main → /(root)**. Updates to the main branch deploy at the same stable URLs.
+
+This is an original arcade game inspired by the general style of 1980s platform adventures. It is not an official Manic Miner release.
